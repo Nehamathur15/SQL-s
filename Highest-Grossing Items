@@ -1,0 +1,23 @@
+Question:
+Assume you are given the table below containing information on Amazon customers and their spend on products belonging to various categories. 
+Identify the top two highest-grossing products within each category in 2022. Output the category, product, and total spend.
+
+product_spend Table:
+Column Name	Type
+category	string
+product	string
+user_id	integer
+spend	decimal
+transaction_date	timestamp
+
+Query:
+with temp_cte as(
+SELECT category,product,
+sum(spend) as total, RANK() over(PARTITION BY category
+order by sum(spend) DESC)
+from product_spend
+WHERE extract(year from transaction_date) = '2022'
+GROUP BY category, product)
+Select category, product, total as product_spend
+from temp_cte
+where rank = '1' or rank = '2'
