@@ -1,0 +1,34 @@
+Question:
+
+New TikTok users sign up with their emails, so each signup requires a text confirmation to activate the new user's account.
+
+Write a query to find the confirmation rate of users who confirmed their signups with text messages. Round the result to 2 decimal places.
+
+Assumptions:
+
+A user may fail to confirm several times with text. Once the signup is confirmed for a user, they will not be able to initiate the signup again.
+A user may not initiate the signup confirmation process at all.
+emails Table:
+Column Name	Type
+email_id	integer
+user_id	integer
+signup_date	datetime
+
+texts Table:
+Column Name	Type
+text_id	integer
+email_id	integer
+signup_action	varchar
+
+Query:
+with temp_cte as(
+SELECT * ,
+case when signup_action = 'Confirmed' then 1 else 0 end as confirmed_users,
+case when signup_action = 'Not Confirmed' then 1 else 0 end as unconfirmed_users
+FROM emails
+inner join texts 
+on emails.email_id = texts.email_id)
+SELECT
+ROUND((sum(confirmed_users)*1.0 / (sum(confirmed_users)+sum(unconfirmed_users))),2)
+as confirm_rate
+from temp_cte
