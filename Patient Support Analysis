@@ -1,0 +1,71 @@
+Question:
+
+UnitedHealth Group has a program called Advocate4Me, which allows members to call an advocate and receive support for their health care needs –
+whether that's behavioural, clinical, well-being, health care financing, benefits, claims or pharmacy help.
+
+A long-call is categorised as any call that lasts more than 5 minutes (300 seconds). What's the month-over-month growth of long-calls?
+
+Output the year, month (both in numerical and chronological order) and growth percentage rounded to 1 decimal place.
+
+callers Table:
+Column Name	Type
+policy_holder_id	integer
+case_id	varchar
+call_category	varchar
+call_received	timestamp
+call_duration_secs	integer
+original_order	integer
+
+callers Example Input:
+
+policy_holder_id	case_id	call_category	call_received	call_duration_secs	original_order
+54624612	01/19/2022 18:59:00	140	22		
+54026568	01/29/2022 16:19:00	397	217		
+54026568	01/30/2022 08:18:00	320	134		
+54624612	02/27/2022 00:34:00	183	468		
+54624612	02/27/2022 10:56:00	435	19		
+54026568	03/01/2022 21:37	440	380		
+54624612	03/22/2022 14:45:00	247	318		
+54624612	04/09/2022 5:52	51	188		
+51435044	04/11/2022 2:41	303	291		
+54624612	04/13/2022 14:16:00	51	500		
+51435044	04/18/2022 21:58:00	354	439		
+54026568	05/07/2022 1:27	404	341		
+54026568	05/13/2022 01:06:00	404	270		
+
+Example Output:
+yr	mth	growth_pct
+2022	1	
+2022	2	-100.0
+2022	3	0
+2022	4	-50.0
+2022	5	33.3
+
+Explanation:
+Call counts: Jan - 2 calls; Feb - 1 call; Mar - 1 call; Apr - 2 calls; May - 3 calls
+
+In January, the percentage is 0% as there is no previous month's call info.
+In February, there is a 50% drop from 2 calls to 1 call.
+In March, no change in percentage.
+In April, there are 2 calls, hence a 100% growth from March.
+Finally, in May, there were 3 calls thus a 33.3% growth from April.
+
+
+Solution:
+
+With total_calls AS(
+SELECT EXTRACT(year from call_received) as yr,
+EXTRACT(month from call_received) as mth,
+count(policy_holder_id) as no_of_calls
+FROM callers
+where call_duration_secs > 300
+group by 
+EXTRACT(year from call_received),
+EXTRACT(month from call_received)
+order by 
+yr,mth
+)
+Select yr,mth,
+round(100.0*(no_of_calls - lag(no_of_calls,1) over(order by yr,mth))/no_of_calls,1)
+as growth_pct
+from total_calls
